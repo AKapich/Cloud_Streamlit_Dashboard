@@ -46,10 +46,15 @@ for league in [
         logger.info(f"Successfully added data about match {match_id} from {league}")
 
     # in case any new match is scheduled
-    if len(new_matches) > 0:
+    matches_not_present_in_schedule = set(new_schedule["game_id"]) - set(
+        events["game_id"]
+    )
+    if len(matches_not_present_in_schedule) > 0:
         conn.register(
             "temp_schedule",
-            new_schedule[new_schedule["game_id"].isin(new_matches)].reset_index(),
+            new_schedule[
+                new_schedule["game_id"].isin(matches_not_present_in_schedule)
+            ].reset_index(),
         )
         conn.execute(
             """
@@ -58,7 +63,9 @@ for league in [
         """
         )
         conn.commit()
-        logger.info(f"Successfully inserted {len(new_matches)} matches for {league}")
+        logger.info(
+            f"Successfully inserted schedule information about {len(matches_not_present_in_schedule)} matches for {league}"
+        )
 
 
 logger.info("Completed processing all leagues")
