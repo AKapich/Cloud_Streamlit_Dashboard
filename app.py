@@ -39,6 +39,8 @@ with st.sidebar:
             "Date Range",
             value=(pd.Timestamp("2024-07-01"), pd.Timestamp.now()),
         )
+        if len(date_range) != 2:
+            date_range = (pd.Timestamp("2024-07-01"), pd.Timestamp.now())
 
     st.divider()
 
