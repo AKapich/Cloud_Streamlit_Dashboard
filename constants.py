@@ -1,10 +1,10 @@
 leagues = dict(
     zip(
-        ["Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1"],
+        ["La Liga", "Serie A", "Premier League", "Bundesliga", "Ligue 1"],
         [
-            "ENG-Premier League",
             "ESP-La Liga",
             "ITA-Serie A",
+            "ENG-Premier League",
             "GER-Bundesliga",
             "FRA-Ligue 1",
         ],
