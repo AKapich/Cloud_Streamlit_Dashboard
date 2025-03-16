@@ -2,6 +2,7 @@ import duckdb
 import soccerdata as sd
 from datetime import datetime
 import logging
+from pandas import DataFrame, concat
 
 
 logging.basicConfig(
@@ -15,6 +16,7 @@ conn = duckdb.connect("whoscored.duckdb")
 schedule = conn.execute("SELECT * FROM schedule").fetchdf()
 events = conn.execute("SELECT * FROM events").fetchdf()
 
+updated_schedule = DataFrame()
 
 for league in [
     "ESP-La Liga",
@@ -26,6 +28,7 @@ for league in [
     logger.info(f"Starting to process league: {league}")
     ws = sd.WhoScored(leagues=league, seasons=datetime.today().year - 1)
     new_schedule = ws.read_schedule()
+    updated_schedule = concat([updated_schedule, new_schedule.reset_index()])
 
     new_matches = set(
         new_schedule[new_schedule["started_at_utc"].notna()]["game_id"]
@@ -45,28 +48,18 @@ for league in [
         conn.commit()
         logger.info(f"Successfully added data about match {match_id} from {league}")
 
-    # in case any new match is scheduled
-    matches_not_present_in_schedule = set(new_schedule["game_id"]) - set(
-        events["game_id"]
-    )
-    if len(matches_not_present_in_schedule) > 0:
-        conn.register(
-            "temp_schedule",
-            new_schedule[
-                new_schedule["game_id"].isin(matches_not_present_in_schedule)
-            ].reset_index(),
-        )
-        conn.execute(
-            """
-            INSERT INTO schedule 
-            SELECT * FROM temp_schedule
-        """
-        )
-        conn.commit()
-        logger.info(
-            f"Successfully inserted schedule information about {len(matches_not_present_in_schedule)} matches for {league}"
-        )
-
+conn.register(
+    "temp_schedule",
+    updated_schedule,
+)
+conn.execute("DELETE FROM schedule")
+conn.execute(
+    """
+    INSERT INTO schedule 
+    SELECT * FROM temp_schedule
+"""
+)
+conn.commit()
 
 logger.info("Completed processing all leagues")
 conn.close()
