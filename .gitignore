@@ -176,6 +176,3 @@ cython_debug/
 
 # logs
 scraper.log
-
-# App elements
-logos
