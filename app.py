@@ -63,16 +63,21 @@ with st.sidebar:
         reverse=True,
     )
 
-    if (
-        "selected_match" not in st.session_state
-        or st.session_state.selected_match not in matches
-    ) and len(matches) > 0:
-        st.session_state.selected_match = matches[0]
-        selected_match_index = matches.index(st.session_state.selected_match)
+    if not matches:
+        st.warning("No matches found for the selected league and date range.")
+        selected_match = None
     else:
-        selected_match_index = 0
+        if (
+            "selected_match" not in st.session_state
+            or st.session_state.selected_match not in matches
+        ):
+            st.session_state.selected_match = matches[0]
 
-    selected_match = st.selectbox("Select Match", matches, index=selected_match_index)
+        selected_match = st.selectbox(
+            "Select Match",
+            matches,
+            index=matches.index(st.session_state.selected_match),
+        )
 
     st.divider()
     st.title(f"Latest {selected_league} results:")
