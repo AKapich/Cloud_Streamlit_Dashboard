@@ -733,6 +733,9 @@ def pass_xT_momentum(
     return fig, ax
 
 
+# TODO check if the function works correctly
+
+
 def pitch_event_scatter(
     main_df, team, event_type, players=None, heatmap=False, inverse=False
 ):
@@ -840,32 +843,45 @@ def pitch_event_scatter(
 def overview(main_df, home_team, away_team):
     metrics = {}
     for team in [home_team, away_team]:
+        total_touches = len(
+            main_df[(main_df["is_touch"] == True) & (main_df["x"] >= 66.7)]
+        )
+        total_passes = len(
+            main_df[(main_df["team"] == team) & (main_df["type"] == "Pass")]
+        )
+
         metrics[team] = {
             "Field Tilt (%)": round(
-                len(
-                    main_df[
-                        (main_df["is_touch"] == True)
-                        & (main_df["x"] >= 66.7)
-                        & (main_df["team"] == team)
-                    ]
-                )
-                / len(main_df[(main_df["is_touch"] == True) & (main_df["x"] >= 66.7)])
-                * 100,
+                (
+                    len(
+                        main_df[
+                            (main_df["is_touch"] == True)
+                            & (main_df["x"] >= 66.7)
+                            & (main_df["team"] == team)
+                        ]
+                    )
+                    / total_touches
+                    * 100
+                    if total_touches > 0
+                    else 0
+                ),
                 1,
             ),
-            "Passes": str(
-                len(main_df[(main_df["team"] == team) & (main_df["type"] == "Pass")])
-            ),
+            "Passes": str(total_passes),
             "Pass Accuracy (%)": round(
-                len(
-                    main_df[
-                        (main_df["team"] == team)
-                        & (main_df["type"] == "Pass")
-                        & (main_df["outcome_type"] == "Successful")
-                    ]
-                )
-                / len(main_df[(main_df["team"] == team) & (main_df["type"] == "Pass")])
-                * 100,
+                (
+                    len(
+                        main_df[
+                            (main_df["team"] == team)
+                            & (main_df["type"] == "Pass")
+                            & (main_df["outcome_type"] == "Successful")
+                        ]
+                    )
+                    / total_passes
+                    * 100
+                    if total_passes > 0
+                    else 0
+                ),
                 1,
             ),
             "Shots": str(
