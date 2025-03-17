@@ -613,7 +613,7 @@ def pass_xT_momentum(
 
     momentum_df = pd.DataFrame({"minute": minutes, "momentum": momentum})
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(18, 12))
     fig.set_facecolor("#0e1117")
     ax.set_facecolor("#0e1117")
 
@@ -692,7 +692,7 @@ def pass_xT_momentum(
 
     goals = df[df["type"] == "Goal"][["minute", "team"]]
     for _, row in goals.iterrows():
-        ymin, ymax = (0.5, 0.8) if row["team"] == home_team else (0.14, 0.5)
+        ymin, ymax = (0.5, 0.8) if row["team"] == home_team else (0.2, 0.5)
         ax.axvline(
             row["minute"],
             color="white",
@@ -704,7 +704,7 @@ def pass_xT_momentum(
         )
         ax.scatter(
             row["minute"],
-            (1 if row["team"] == home_team else -1) * 0.06,
+            (1 if row["team"] == home_team else -1) * 0.049,
             color="white",
             s=100,
             zorder=10,
@@ -712,7 +712,7 @@ def pass_xT_momentum(
         )
         ax.text(
             row["minute"] + 0.1,
-            (1 if row["team"] == home_team else -1) * 0.067,
+            (1 if row["team"] == home_team else -1) * 0.053,
             "Goal",
             fontsize=10,
             ha="center",
@@ -720,6 +720,15 @@ def pass_xT_momentum(
             fontfamily="Monospace",
             color="white",
         )
+
+    ax.set_title(
+        "Momentum (based on Pass xT)",
+        color="white",
+        fontsize=20,
+        fontweight="bold",
+        fontfamily="Monospace",
+        pad=-5,
+    )
 
     return fig, ax
 
@@ -826,3 +835,63 @@ def pitch_event_scatter(
     )
 
     return fig, ax
+
+
+def overview(main_df, home_team, away_team):
+    metrics = {}
+    for team in [home_team, away_team]:
+        metrics[team] = {
+            "Field Tilt (%)": round(
+                len(
+                    main_df[
+                        (main_df["is_touch"] == True)
+                        & (main_df["x"] >= 66.7)
+                        & (main_df["team"] == team)
+                    ]
+                )
+                / len(main_df[(main_df["is_touch"] == True) & (main_df["x"] >= 66.7)])
+                * 100,
+                1,
+            ),
+            "Passes": str(
+                len(main_df[(main_df["team"] == team) & (main_df["type"] == "Pass")])
+            ),
+            "Pass Accuracy (%)": round(
+                len(
+                    main_df[
+                        (main_df["team"] == team)
+                        & (main_df["type"] == "Pass")
+                        & (main_df["outcome_type"] == "Successful")
+                    ]
+                )
+                / len(main_df[(main_df["team"] == team) & (main_df["type"] == "Pass")])
+                * 100,
+                1,
+            ),
+            "Shots": str(
+                len(main_df[(main_df["team"] == team) & (main_df["is_shot"].notna())])
+            ),
+            "Corners": str(
+                len(
+                    main_df[
+                        (main_df["type"] == "CornerAwarded")
+                        & (main_df["team"] == team)
+                        & (main_df["outcome_type"] == "Successful")
+                    ]
+                )
+            ),
+            "Yellow Cards": str(
+                len(
+                    main_df[
+                        (main_df["team"] == team) & (main_df["card_type"] == "Yellow")
+                    ]
+                )
+            ),
+            "Red Cards": str(
+                len(
+                    main_df[(main_df["team"] == team) & (main_df["card_type"] == "Red")]
+                )
+            ),
+        }
+
+    return pd.DataFrame(metrics)

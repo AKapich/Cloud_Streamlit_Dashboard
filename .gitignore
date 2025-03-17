@@ -176,3 +176,6 @@ cython_debug/
 
 # logs
 scraper.log
+
+# Jupyter notebooks in main directory
+/*.ipynb

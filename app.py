@@ -187,7 +187,47 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(
 )
 
 with tab1:
-    pass
+    overview_stats = overview(main_df=main_df, home_team=home_team, away_team=away_team)
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown(
+            f"<div style='text-align: center; font-weight: bold;'>{home_team}</div>",
+            unsafe_allow_html=True,
+        )
+        for val in overview_stats[home_team]:
+            formatted_val = f"{val:.1f}" if isinstance(val, float) else str(val)
+            st.markdown(
+                f"<p style='text-align: center;'>{formatted_val}</p>",
+                unsafe_allow_html=True,
+            )
+
+    with col2:
+        st.markdown(
+            "<div style='text-align: center; font-weight: bold;'>Statistic</div>",
+            unsafe_allow_html=True,
+        )
+        for stat in overview_stats.index:
+            st.markdown(
+                f"<p style='text-align: center;'>{stat}</p>", unsafe_allow_html=True
+            )
+
+    with col3:
+        st.markdown(
+            f"<div style='text-align: center; font-weight: bold;'>{away_team}</div>",
+            unsafe_allow_html=True,
+        )
+        for val in overview_stats[away_team]:
+            formatted_val = f"{val:.1f}" if isinstance(val, float) else str(val)
+            st.markdown(
+                f"<p style='text-align: center;'>{formatted_val}</p>",
+                unsafe_allow_html=True,
+            )
+    st.divider()
+    with st.spinner(f"Loading Match Momentum..."):
+        fig, ax = pass_xT_momentum(main_df, home_team, away_team)
+        st.pyplot(fig, use_container_width=False)
+
 
 with tab2:
     event_dict = {
@@ -248,6 +288,7 @@ with tab2:
         )
         st.pyplot(fig)
 
+
 with tab3:
     tab3_col1, tab3_col2 = st.columns([1, 1])
     with tab3_col1:
@@ -275,6 +316,7 @@ with tab3:
         with st.spinner(f"Loading Voronoi Diagram visualization..."):
             fig, ax = voronoi(main_df, home_team, away_team)
             st.pyplot(fig)
+
 
 with tab4:
     analysed_team_tab4 = st.radio(

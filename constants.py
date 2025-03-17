@@ -35,4 +35,5 @@ colors = {
     "Lens": "#f5d30f",
     "Marseille": "#009ddc",
     "Saint-Etienne": "#1d995b",
+    # TODO add all the teams and furthermore adjust .png filenames
 }
