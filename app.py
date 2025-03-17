@@ -178,15 +178,12 @@ with col6:
 
 st.divider()
 
-### Visualizations here
-st.subheader("Match Statistics")
-chart_placeholder = st.empty()
-
+st.subheader("Match Analysis")
 main_df = events[events["game_id"] == match_info["game_id"]].copy()
 
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    ["Overview", "Event Map", "Pitch Control", "Passing", "Other"]
+    ["Overview", "Event Map", "Pitch Control", "Passing", "Shooting"]
 )
 
 with tab1:
@@ -251,6 +248,33 @@ with tab2:
         )
         st.pyplot(fig)
 
+with tab3:
+    tab3_col1, tab3_col2 = st.columns([1, 1])
+    with tab3_col1:
+        analysed_team_tab3 = st.radio(
+            "Select Team (applicable for player territories)",
+            [home_team, away_team],
+            horizontal=True,
+            key="team_selector_tab3",
+        )
+        inverse_tab3 = analysed_team_tab3 == away_team
+
+    with tab3_col2:
+        plot_type_tab3 = st.radio(
+            "Select Plot Type",
+            ["Player Territories", "Voronoi Diagram"],
+            horizontal=True,
+            key="plot_type_tab3",
+        )
+
+    if plot_type_tab3 == "Player Territories":
+        with st.spinner(f"Loading Player Territories visualization..."):
+            fig, ax = team_convex_hull(main_df, analysed_team_tab3, inverse_tab3)
+            st.pyplot(fig)
+    else:  # Voronoi Diagram
+        with st.spinner(f"Loading Voronoi Diagram visualization..."):
+            fig, ax = voronoi(main_df, home_team, away_team)
+            st.pyplot(fig)
 
 with tab4:
     analysed_team_tab4 = st.radio(
@@ -281,3 +305,9 @@ with tab4:
             inverse=inverse_tab4,
         )
         st.pyplot(fig)
+
+
+with tab5:
+    with st.spinner(f"Loading Shot Map..."):
+        fig, ax = shot_types(main_df, home_team, away_team)
+        st.pyplot(fig, use_container_width=False)

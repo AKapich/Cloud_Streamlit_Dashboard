@@ -438,6 +438,37 @@ def shot_types(main_df, home_team, away_team):
         pad=-5,
     )
 
+    home_team_text = ax.text(
+        50,
+        60,
+        home_team,
+        fontsize=8,
+        ha="center",
+        fontfamily="Monospace",
+        fontweight="bold",
+        color="white",
+    )
+    home_team_text.set_bbox(
+        dict(
+            facecolor=colors[home_team], alpha=0.5, edgecolor="white", boxstyle="round"
+        )
+    )
+    away_team_text = ax.text(
+        50,
+        39,
+        away_team,
+        fontsize=8,
+        ha="center",
+        fontfamily="Monospace",
+        fontweight="bold",
+        color="white",
+    )
+    away_team_text.set_bbox(
+        dict(
+            facecolor=colors[away_team], alpha=0.5, edgecolor="white", boxstyle="round"
+        )
+    )
+
     return fig, ax
 
 
@@ -454,7 +485,9 @@ def team_convex_hull(main_df, team, inverse=False):
         events["x"] = 100 - events["x"]
         events["y"] = 100 - events["y"]
 
-    fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=False, tight_layout=True)
+    fig, ax = plt.subplots(
+        figsize=(12, 12), constrained_layout=False, tight_layout=True
+    )
     fig.set_facecolor("#0e1117")
     ax.patch.set_facecolor("#0e1117")
     pitch = Pitch(pitch_type="opta", pitch_color="#0e1117", line_color="#c7d5cc")
@@ -477,8 +510,8 @@ def team_convex_hull(main_df, team, inverse=False):
 
     for player in startingXI:
         tempdf = events[events["player"] == player]
-        # threshold of 0.25 sd
-        tempdf = tempdf[np.abs(stats.zscore(tempdf[["x", "y"]])) < 0.25]
+        # threshold of 0.2 sd
+        tempdf = tempdf[np.abs(stats.zscore(tempdf[["x", "y"]])) < 0.2]
         actions = tempdf[["x", "y"]].dropna().values
 
         annotation_text = player.split(" ")[-1]
