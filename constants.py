@@ -15,7 +15,7 @@ leagues = dict(
 colors = {
     "Barcelona": "#a4234a",
     "Valencia": "#fede1b",
-    "Alaves": "#0232a0;",
+    "Deportivo Alaves": "#0232a0;",
     "Las Palmas": "#fee300",
     "Real Sociedad": "#0067b0",
     "Juventus": "black",

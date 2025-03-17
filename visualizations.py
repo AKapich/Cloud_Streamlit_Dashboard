@@ -49,9 +49,7 @@ def passing_sonars(main_df, team, inverse=False):
 
     pass_sonar = pass_sonar.merge(average_location, left_on="player", right_index=True)
 
-    fig, ax = plt.subplots(
-        figsize=(12, 12), constrained_layout=False, tight_layout=True
-    )
+    fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=False, tight_layout=True)
     fig.set_facecolor("#0e1117")
     ax.patch.set_facecolor("#0e1117")
     pitch = Pitch(pitch_type="opta", pitch_color="#0e1117", line_color="#c7d5cc")
@@ -106,9 +104,7 @@ def pass_heatmap(main_df, team, inverse=False):
     passes = main_df[(main_df["team"] == team) & (main_df["type"] == "Pass")].copy()
     passes = passes.query(f'team == "{team}"')
 
-    fig, ax = plt.subplots(
-        figsize=(12, 12), constrained_layout=False, tight_layout=True
-    )
+    fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=False, tight_layout=True)
     fig.set_facecolor("#0e1117")
     ax.patch.set_facecolor("#0e1117")
     pitch = Pitch(pitch_type="opta", pitch_color="#0e1117", line_color="#c7d5cc")
@@ -164,9 +160,7 @@ def voronoi(main_df, home_team, away_team):
             df.loc[:, "x"][i] = 100 - df["x"][i]
             df.loc[:, "y"][i] = 100 - df["y"][i]
 
-    fig, ax = plt.subplots(
-        figsize=(12, 12), constrained_layout=False, tight_layout=True
-    )
+    fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=False, tight_layout=True)
     fig.set_facecolor("#0e1117")
     ax.patch.set_facecolor("#0e1117")
     pitch = Pitch(pitch_type="opta", pitch_color="#0e1117", line_color="#c7d5cc")
@@ -224,9 +218,7 @@ def progressive_passes(main_df, team, inverse=False):
     # according to definiton pass is progressive if it brings the ball closer to the goal by at least 25%
     df["progressive"] = df["end"] < 0.75 * df["beginning"]
 
-    fig, ax = plt.subplots(
-        figsize=(12, 12), constrained_layout=False, tight_layout=True
-    )
+    fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=False, tight_layout=True)
     fig.set_facecolor("#0e1117")
     ax.patch.set_facecolor("#0e1117")
     pitch = Pitch(pitch_type="opta", pitch_color="#0e1117", line_color="#c7d5cc")
@@ -272,9 +264,7 @@ def final_3rd_passes(main_df, team, inverse=False):
         else ((df["end_x"] < 33.3) & (df["x"] >= 33.3))
     )
 
-    fig, ax = plt.subplots(
-        figsize=(12, 12), constrained_layout=False, tight_layout=True
-    )
+    fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=False, tight_layout=True)
     fig.set_facecolor("#0e1117")
     ax.patch.set_facecolor("#0e1117")
     pitch = Pitch(pitch_type="opta", pitch_color="#0e1117", line_color="#c7d5cc")
@@ -320,9 +310,7 @@ def penalty_area_passes(main_df, team, inverse=False):
         else (df["end_x"].between(0, 17) & df["end_y"].between(21, 79))
     )
 
-    fig, ax = plt.subplots(
-        figsize=(12, 12), constrained_layout=False, tight_layout=True
-    )
+    fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=False, tight_layout=True)
     fig.set_facecolor("#0e1117")
     ax.patch.set_facecolor("#0e1117")
     pitch = Pitch(pitch_type="opta", pitch_color="#0e1117", line_color="#c7d5cc")
@@ -361,9 +349,7 @@ def shot_types(main_df, home_team, away_team):
         "ShotOnPost": "v",
     }
 
-    fig, ax = plt.subplots(
-        figsize=(12, 12), constrained_layout=False, tight_layout=True
-    )
+    fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=False, tight_layout=True)
     fig.set_facecolor("#0e1117")
     ax.patch.set_facecolor("#0e1117")
     pitch = VerticalPitch(
@@ -468,9 +454,7 @@ def team_convex_hull(main_df, team, inverse=False):
         events["x"] = 100 - events["x"]
         events["y"] = 100 - events["y"]
 
-    fig, ax = plt.subplots(
-        figsize=(12, 12), constrained_layout=False, tight_layout=True
-    )
+    fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=False, tight_layout=True)
     fig.set_facecolor("#0e1117")
     ax.patch.set_facecolor("#0e1117")
     pitch = Pitch(pitch_type="opta", pitch_color="#0e1117", line_color="#c7d5cc")
@@ -714,9 +698,7 @@ def pitch_event_scatter(
     if players is not None:
         df = df[df["player"].isin(players)]
 
-    fig, ax = plt.subplots(
-        figsize=(12, 12), constrained_layout=False, tight_layout=True
-    )
+    fig, ax = plt.subplots(figsize=(12, 8), constrained_layout=False, tight_layout=True)
     fig.set_facecolor("#0e1117")
     ax.patch.set_facecolor("#0e1117")
     pitch = Pitch(pitch_type="opta", pitch_color="#0e1117", line_color="#c7d5cc")
@@ -785,8 +767,24 @@ def pitch_event_scatter(
             family="monospace",
         )
 
+    title_event_dict = {
+        "Pass": "Passes",
+        "BallRecovery": "Ball Recoveries",
+        "Foul": "Fouls",
+        "Aerial": "Aerial Duels",
+        "TakeOn": "Take-Ons",
+        "Tackle": "Tackles",
+        "Clearance": "Cleareances",
+        "Interception": "Interceptions",
+        "Dispossessed": "Dispossessed",
+    }
+
+    if players is not None and len(players) == 1:
+        title = f"{team}: {title_event_dict[event_type]} map for {players[0]}"
+    else:
+        title = f"{team}: {title_event_dict[event_type]} map"
     ax.set_title(
-        f"{team}: {event_type} map",
+        title,
         color="white",
         fontsize=20,
         fontweight="bold",

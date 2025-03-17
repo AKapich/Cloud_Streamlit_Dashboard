@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
 import duckdb
+import atexit
 from constants import *
 from utils import *
-import atexit
-from datetime import datetime
+from visualizations import *
 
 
 st.set_page_config(page_title="Football Analytics", page_icon="⚽", layout="wide")
@@ -178,18 +178,106 @@ with col6:
 
 st.divider()
 
-
+### Visualizations here
 st.subheader("Match Statistics")
 chart_placeholder = st.empty()
 
+main_df = events[events["game_id"] == match_info["game_id"]].copy()
 
-tab1, tab2, tab3 = st.tabs(["Overview", "Player Stats", "Team Comparison"])
+
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
+    ["Overview", "Event Map", "Pitch Control", "Passing", "Other"]
+)
 
 with tab1:
     pass
 
 with tab2:
-    pass
+    event_dict = {
+        "Passes": "Pass",
+        "Ball Recoveries": "BallRecovery",
+        "Fouls": "Foul",
+        "Aerial Duels": "Aerial",
+        "Take-Ons": "TakeOn",
+        "Tackles": "Tackle",
+        "Cleareances": "Clearance",
+        "Interceptions": "Interception",
+        "Dispossessed": "Dispossessed",
+    }
 
-with tab3:
-    pass
+    tab2_col1, tab2_col2 = st.columns([1, 1])
+    with tab2_col1:
+        analysed_team_tab2 = st.radio(
+            "Select Team",
+            [home_team, away_team],
+            horizontal=True,
+            key="team_selector_tab2",
+        )
+        inverse_tab2 = analysed_team_tab2 == away_team
+
+    with tab2_col2:
+        show_heatmap = st.checkbox("Show Heatmap", value=False)
+
+    event_type = st.selectbox(
+        "Select Event Type",
+        list(event_dict.keys()),
+        index=0,
+    )
+
+    players = [
+        p
+        for p in list(main_df[main_df["team"] == analysed_team_tab2]["player"].unique())
+        if p is not None
+    ]
+    with st.expander("Player Selection", expanded=False):
+        grid = st.multiselect(
+            "Select Players",
+            players,
+            default=players,
+            placeholder="Choose players to display (default: all)",
+        )
+
+    if not grid:
+        grid = players
+
+    with st.spinner(f"Loading {event_type} visualization..."):
+        fig, ax = pitch_event_scatter(
+            main_df=main_df,
+            event_type=event_dict[event_type],
+            team=analysed_team_tab2,
+            players=grid,
+            heatmap=show_heatmap,
+            inverse=inverse_tab2,
+        )
+        st.pyplot(fig)
+
+
+with tab4:
+    analysed_team_tab4 = st.radio(
+        "Select Team", [home_team, away_team], horizontal=True, key="team_selector_tab4"
+    )
+    inverse_tab4 = analysed_team_tab4 == away_team
+
+    pass_plotting_dict = {
+        "Passing Sonars": passing_sonars,
+        "Pass Heatmap": pass_heatmap,
+        "Progressive Passes": progressive_passes,
+        "Passes into Final 3rd": final_3rd_passes,
+        "Passes into Penalty Area": penalty_area_passes,
+    }
+
+    plot_type = st.selectbox(
+        "Select Plot Type",
+        pass_plotting_dict.keys(),
+        index=0,
+    )
+
+    plot_func_tab4 = pass_plotting_dict[plot_type]
+
+    with st.spinner(f"Loading {plot_type} visualization..."):
+        fig, ax = plot_func_tab4(
+            main_df=main_df,
+            team=analysed_team_tab4,
+            inverse=inverse_tab4,
+        )
+        st.pyplot(fig)
