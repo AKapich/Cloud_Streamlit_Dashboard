@@ -116,6 +116,12 @@ if not selected_match:
     st.stop()
 
 home_team, away_team = selected_match.split(" - ", 1)
+# FIXME temporary fix
+if home_team in team_name_temporary_fix.keys():
+    home_team = team_name_temporary_fix[home_team]
+if away_team in team_name_temporary_fix.keys():
+    away_team = team_name_temporary_fix[away_team]
+#
 original_game = matches_dict[selected_match]
 
 match_info = schedule[schedule["game"] == original_game].squeeze()

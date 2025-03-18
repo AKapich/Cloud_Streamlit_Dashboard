@@ -37,3 +37,9 @@ colors = {
     "Saint-Etienne": "#1d995b",
     # TODO add all the teams and furthermore adjust .png filenames
 }
+
+
+# FIXME
+team_name_temporary_fix = {
+    "VfB Stuttgart": "Stuttgart",
+}
