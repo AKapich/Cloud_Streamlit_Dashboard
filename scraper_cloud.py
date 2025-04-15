@@ -1,41 +1,11 @@
-from datetime import datetime
+import psycopg2
 import soccerdata as sd
+from datetime import datetime
 import logging
 import pandas as pd
 import numpy as np
 import json
 from pandas import DataFrame, concat
-from google.cloud.sql.connector import Connector
-import sqlalchemy
-from dotenv import load_dotenv
-import os
-
-# Load environment variables from .env file
-load_dotenv()
-print(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
-
-# Cloud SQL connection setup
-instance_connection_name = "tidal-copilot-372909:europe-central2:football-db"
-db_user = "postgres"
-db_pass = "googlecloud-makeitloud"
-db_name = "postgres"
-
-connector = Connector()
-
-def getconn():
-    conn = connector.connect(
-        instance_connection_name,
-        "pg8000",
-        user=db_user,
-        password=db_pass,
-        db=db_name
-    )
-    return conn
-
-engine = sqlalchemy.create_engine(
-    "postgresql+pg8000://",
-    creator=getconn,
-)
 
 def clean_for_postgres(df: pd.DataFrame) -> pd.DataFrame:
     cleaned = df.copy()
@@ -52,7 +22,7 @@ def clean_for_postgres(df: pd.DataFrame) -> pd.DataFrame:
         # Object columns (may contain strings, lists, dicts, or None)
         elif cleaned[col].dtype == object:
             cleaned[col] = cleaned[col].apply(lambda x: 
-                None if pd.isna(x) or x == "NaN" 
+                None if (not isinstance(x, (dict,list)) and pd.isna(x)) or x == "NaN" 
                 else json.dumps(x) if isinstance(x, (dict, list)) 
                 else x
             )
@@ -67,17 +37,28 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-conn = engine.connect()
+# Cloud SQL connection setup
+def create_connection():
+    conn = psycopg2.connect(
+        dbname="postgres",
+        user="postgres",
+        password="googlecloud-makeitloud",
+        host="34.116.186.20",
+        port="5432",
+    )
+    return conn
 
-schedule = pd.read_sql("SELECT * FROM schedule", conn)
-events = pd.read_sql("SELECT * FROM events", conn)
+# Open connection to Cloud SQL
+conn = create_connection()
+
+# Fetch data from Cloud SQL (replace with actual query)
+cursor = conn.cursor()
+cursor.execute("SELECT * FROM schedule")
+schedule = pd.DataFrame(cursor.fetchall(), columns=[desc[0] for desc in cursor.description])
+cursor.execute("SELECT * FROM events")
+events = pd.DataFrame(cursor.fetchall(), columns=[desc[0] for desc in cursor.description])
 
 updated_schedule = DataFrame()
-
-meta_data = sqlalchemy.MetaData()
-meta_data.reflect(engine)
-events_table = meta_data.tables['events']
-schedule_table = meta_data.tables['schedule']
 
 # Process the leagues
 for league in [
@@ -103,19 +84,30 @@ for league in [
         match_event_data = match_event_data.reset_index()
         match_event_data = clean_for_postgres(match_event_data)
         
-        insert_stmt = events_table.insert().values(match_event_data.to_dict(orient='records'))
-
-        conn.execute(insert_stmt)
-
+        # Insert match data into Cloud SQL
+        columns = match_event_data.columns.tolist()
+        insert_query = f"""
+        INSERT INTO events ({', '.join(columns)})
+        VALUES ({', '.join(['%s'] * len(columns))})
+        """
+        
+        cursor.executemany(insert_query, match_event_data.values.tolist())
+        conn.commit()
         logger.info(f"Successfully added data about match {match_id} from {league}")
 
-
 # Insert updated schedule into Cloud SQL
-insert_stmt = schedule_table.insert().values(updated_schedule.to_dict(orient='records'))
-
-conn.execute(insert_stmt)
+updated_schedule = updated_schedule.reset_index()
+columns = updated_schedule.columns.tolist()
+insert_query = f"""
+INSERT INTO schedule ({', '.join(columns)})
+VALUES ({', '.join(['%s'] * len(columns))})
+"""
+cursor.executemany(insert_query, updated_schedule.values.tolist())
+conn.commit()
 
 logger.info("Completed processing all leagues")
 
 # Close the connection
+cursor.close()
 conn.close()
+
