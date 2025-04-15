@@ -5,13 +5,20 @@ import atexit
 from constants import *
 from utils import *
 from visualizations import *
+import psycopg2
 
 
 st.set_page_config(page_title="Football Analytics", page_icon="⚽", layout="wide")
 
 
 def create_connection():
-    conn = duckdb.connect(database="whoscored.duckdb")
+    conn = psycopg2.connect(
+        dbname="postgres",
+        user="postgres",
+        password="googlecloud-makeitloud",
+        host="34.116.186.20",
+        port="5432",
+    )
     return conn
 
 
@@ -28,9 +35,13 @@ def close_connection():
 atexit.register(close_connection)
 
 
+
 # TODO to change for cloud storage
-schedule = st.session_state.conn.execute("SELECT * FROM schedule").fetchdf()
-events = st.session_state.conn.execute("SELECT * FROM events").fetchdf()
+if "conn" not in st.session_state:
+    st.session_state.conn = create_connection()
+
+schedule = pd.read_sql("SELECT * FROM schedule", st.session_state.conn)
+events = pd.read_sql("SELECT * FROM events", st.session_state.conn)
 featured_matches = set(events["game_id"])
 
 with st.sidebar:
@@ -58,7 +69,7 @@ with st.sidebar:
         <= pd.Timestamp(g[:10])
         <= pd.Timestamp(date_range[1])
     }
-
+    
     matches = sorted(
         matches_dict.keys(),
         key=lambda x: pd.Timestamp(matches_dict[x][:10]),
