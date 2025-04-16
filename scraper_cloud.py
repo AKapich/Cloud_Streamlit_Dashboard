@@ -11,13 +11,15 @@ def clean_for_postgres(df: pd.DataFrame) -> pd.DataFrame:
     cleaned = df.copy()
 
     for col in cleaned.columns:
+        cleaned[col] = cleaned[col].replace({True: 1, False: 0})
+        cleaned[col] = cleaned[col].fillna(0)
         # Convert booleans to integers
         if cleaned[col].dtype == bool:
             cleaned[col] = cleaned[col].astype(int)
         
-        # Handle NaNs in numeric columns
-        elif np.issubdtype(cleaned[col].dtype, np.number):
-            cleaned[col] = cleaned[col].replace({np.nan: None})
+        # # Handle NaNs in numeric columns
+        # elif np.issubdtype(cleaned[col].dtype, np.number):
+        #     cleaned[col] = cleaned[col].replace({np.nan: None})
         
         # Object columns (may contain strings, lists, dicts, or None)
         elif cleaned[col].dtype == object:
@@ -62,11 +64,11 @@ updated_schedule = DataFrame()
 
 # Process the leagues
 for league in [
-    "ESP-La Liga",
-    "ENG-Premier League",
-    "FRA-Ligue 1",
-    "GER-Bundesliga",
-    "ITA-Serie A",
+    "ESP-La Liga"
+    # "ENG-Premier League",
+    # "FRA-Ligue 1",
+    # "GER-Bundesliga",
+    # "ITA-Serie A",
 ]:
     logger.info(f"Starting to process league: {league}")
     ws = sd.WhoScored(leagues=league, seasons=datetime.today().year - 1)
@@ -79,7 +81,8 @@ for league in [
 
     logger.info(f"Found {len(new_matches)} new matches for {league}")
 
-    for match_id in [new_matches.pop()]:
+    if new_matches:
+        match_id = list(new_matches)[0]
         match_event_data = ws.read_events(match_id=match_id, output_fmt="events")
         match_event_data = match_event_data.reset_index()
         match_event_data = clean_for_postgres(match_event_data)
@@ -97,6 +100,7 @@ for league in [
 
 # Insert updated schedule into Cloud SQL
 updated_schedule = updated_schedule.reset_index()
+updated_schedule = clean_for_postgres(updated_schedule.drop(columns=["index"]))
 columns = updated_schedule.columns.tolist()
 insert_query = f"""
 INSERT INTO schedule ({', '.join(columns)})
