@@ -1,0 +1,29 @@
+# Cache / temp / IDE
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+.DS_Store
+.vscode/
+.idea/
+
+# Dane i logi
+cloud/
+data/
+*.duckdb
+scraper.log
+logs/
+
+# Notebooki w głównym katalogu
+/*.ipynb
+
+# Pliki środowiskowe
+.env
+
+.venv
+
+README.md
+
+scraper.py
+scraper_cloud.py

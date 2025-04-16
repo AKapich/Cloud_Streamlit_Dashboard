@@ -67,7 +67,7 @@ prompt_toolkit==3.0.50
 propcache==0.3.1
 protobuf==5.29.3
 psutil==7.0.0
-psycopg2==2.9.10
+psycopg2-binary==2.9.10
 pure_eval==0.2.3
 pyarrow==19.0.1
 pyasn1==0.6.1
@@ -80,7 +80,6 @@ PySocks==1.7.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
 pytz==2025.1
-pywin32==309
 pyzmq==26.3.0
 referencing==0.36.2
 requests==2.32.3

@@ -12,11 +12,12 @@ st.set_page_config(page_title="Football Analytics", page_icon="⚽", layout="wid
 
 
 def create_connection():
+    cloud_sql_connection_name = "tidal-copilot-372909:europe-central2:football-db"
     conn = psycopg2.connect(
         dbname="postgres",
         user="postgres",
         password="googlecloud-makeitloud",
-        host="34.116.186.20",
+        host=f"/cloudsql/{cloud_sql_connection_name}",
         port="5432",
     )
     return conn
@@ -33,7 +34,6 @@ def close_connection():
 
 
 atexit.register(close_connection)
-
 
 
 # TODO to change for cloud storage
@@ -69,7 +69,7 @@ with st.sidebar:
         <= pd.Timestamp(g[:10])
         <= pd.Timestamp(date_range[1])
     }
-    
+
     matches = sorted(
         matches_dict.keys(),
         key=lambda x: pd.Timestamp(matches_dict[x][:10]),
