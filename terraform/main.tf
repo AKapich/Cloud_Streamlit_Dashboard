@@ -189,25 +189,7 @@ resource "google_sql_database_instance" "football_db" {
     }
 
     ip_configuration {
-      authorized_networks {
-        name  = "aleks"
-        value = "83.5.242.158/32"
-      }
-
-      authorized_networks {
-        name  = "alicja"
-        value = "84.40.220.36/32"
-      }
-
-      authorized_networks {
-        name  = "mati"
-        value = "194.29.137.21/32"
-      }
-
-      authorized_networks {
-        name  = "streamlit app"
-        value = "216.239.0.0/16"
-      }
+      # block removed not to push secret info to github
 
       ipv4_enabled = true
     }

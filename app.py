@@ -6,17 +6,22 @@ from constants import *
 from utils import *
 from visualizations import *
 import psycopg2
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+db_password = os.getenv("DB_PASSWORD")
+cloud_sql_connection_name = os.getenv("DB_CONNECTION_NAME")
 
 
 st.set_page_config(page_title="Football Analytics", page_icon="⚽", layout="wide")
 
 
 def create_connection():
-    cloud_sql_connection_name = "tidal-copilot-372909:europe-central2:football-db"
     conn = psycopg2.connect(
         dbname="postgres",
         user="postgres",
-        password="googlecloud-makeitloud",
+        password=db_password,
         host=f"/cloudsql/{cloud_sql_connection_name}",
         port="5432",
     )
