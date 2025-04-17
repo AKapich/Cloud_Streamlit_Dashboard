@@ -10,7 +10,7 @@ resource "google_cloud_run_v2_job" "scrape_football_data" {
 
     template {
       containers {
-        image = "gcr.io/tidal-copilot-372909/test_cloud_run@sha256:bbb92d49de99467b1146e96103cd0739d839c2c89056635315fa4026bc112e82"
+        image = "gcr.io/tidal-copilot-372909/test_run_job@sha256:323cad260acde7d8062bbf9d1427d91f3983eddc44aa3f354422c39782848f7e"
         name  = "test-cloud-run-1"
 
         resources {
