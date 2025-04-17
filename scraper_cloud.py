@@ -7,6 +7,7 @@ import numpy as np
 import json
 from pandas import DataFrame, concat
 
+
 def clean_for_postgres(df: pd.DataFrame) -> pd.DataFrame:
     cleaned = df.copy()
 
@@ -16,20 +17,23 @@ def clean_for_postgres(df: pd.DataFrame) -> pd.DataFrame:
         # Convert booleans to integers
         if cleaned[col].dtype == bool:
             cleaned[col] = cleaned[col].astype(int)
-        
+
         # # Handle NaNs in numeric columns
         # elif np.issubdtype(cleaned[col].dtype, np.number):
         #     cleaned[col] = cleaned[col].replace({np.nan: None})
-        
+
         # Object columns (may contain strings, lists, dicts, or None)
         elif cleaned[col].dtype == object:
-            cleaned[col] = cleaned[col].apply(lambda x: 
-                None if (not isinstance(x, (dict,list)) and pd.isna(x)) or x == "NaN" 
-                else json.dumps(x) if isinstance(x, (dict, list)) 
-                else x
+            cleaned[col] = cleaned[col].apply(
+                lambda x: (
+                    None
+                    if (not isinstance(x, (dict, list)) and pd.isna(x)) or x == "NaN"
+                    else json.dumps(x) if isinstance(x, (dict, list)) else x
+                )
             )
 
     return cleaned
+
 
 # Configure logging
 logging.basicConfig(
@@ -38,6 +42,7 @@ logging.basicConfig(
     handlers=[logging.FileHandler("scraper.log"), logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
+
 
 # Cloud SQL connection setup
 def create_connection():
@@ -50,15 +55,20 @@ def create_connection():
     )
     return conn
 
+
 # Open connection to Cloud SQL
 conn = create_connection()
 
 # Fetch data from Cloud SQL (replace with actual query)
 cursor = conn.cursor()
 cursor.execute("SELECT * FROM schedule")
-schedule = pd.DataFrame(cursor.fetchall(), columns=[desc[0] for desc in cursor.description])
+schedule = pd.DataFrame(
+    cursor.fetchall(), columns=[desc[0] for desc in cursor.description]
+)
 cursor.execute("SELECT * FROM events")
-events = pd.DataFrame(cursor.fetchall(), columns=[desc[0] for desc in cursor.description])
+events = pd.DataFrame(
+    cursor.fetchall(), columns=[desc[0] for desc in cursor.description]
+)
 
 updated_schedule = DataFrame()
 
@@ -86,14 +96,14 @@ for league in [
         match_event_data = ws.read_events(match_id=match_id, output_fmt="events")
         match_event_data = match_event_data.reset_index()
         match_event_data = clean_for_postgres(match_event_data)
-        
+
         # Insert match data into Cloud SQL
         columns = match_event_data.columns.tolist()
         insert_query = f"""
         INSERT INTO events ({', '.join(columns)})
         VALUES ({', '.join(['%s'] * len(columns))})
         """
-        
+
         cursor.executemany(insert_query, match_event_data.values.tolist())
         conn.commit()
         logger.info(f"Successfully added data about match {match_id} from {league}")
@@ -114,4 +124,3 @@ logger.info("Completed processing all leagues")
 # Close the connection
 cursor.close()
 conn.close()
-
