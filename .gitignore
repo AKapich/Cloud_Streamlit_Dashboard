@@ -1,3 +1,5 @@
+terraform_sa_key.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
