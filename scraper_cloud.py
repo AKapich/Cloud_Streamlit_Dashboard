@@ -6,7 +6,12 @@ import pandas as pd
 import numpy as np
 import json
 from pandas import DataFrame, concat
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+db_password = os.getenv("DB_PASSWORD")
+db_host = os.getenv("DB_HOST")
 
 def clean_for_postgres(df: pd.DataFrame) -> pd.DataFrame:
     cleaned = df.copy()
@@ -49,8 +54,8 @@ def create_connection():
     conn = psycopg2.connect(
         dbname="postgres",
         user="postgres",
-        password="googlecloud-makeitloud",
-        host="34.116.186.20",
+        password=db_password,
+        host=db_host,
         port="5432",
     )
     return conn
