@@ -100,11 +100,13 @@ def extract_match_centre_data(match_id):
 conn = create_connection()
 
 cursor = conn.cursor()
-cursor.execute("SELECT * FROM schedule")
-schedule_db = pd.DataFrame(
-    cursor.fetchall(), columns=[desc[0] for desc in cursor.description]
-)
-cursor.execute("SELECT * FROM events")
+cursor.execute("""
+    SELECT e.game_id
+    FROM events e
+    JOIN schedule s ON e.game_id = s.game_id
+    WHERE EXTRACT(MONTH FROM s.date) = EXTRACT(MONTH FROM CURRENT_DATE)
+      AND EXTRACT(YEAR FROM s.date) = EXTRACT(YEAR FROM CURRENT_DATE)
+""")
 events_db = pd.DataFrame(
     cursor.fetchall(), columns=[desc[0] for desc in cursor.description]
 )
