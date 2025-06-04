@@ -12,6 +12,7 @@ import os
 load_dotenv()
 db_password = os.getenv("DB_PASSWORD")
 cloud_sql_connection_name = os.getenv("DB_CONNECTION_NAME")
+db_host = os.getenv("DB_HOST")
 
 
 st.set_page_config(page_title="Football Analytics", page_icon="⚽", layout="wide")
@@ -22,7 +23,8 @@ def create_connection():
         dbname="postgres",
         user="postgres",
         password=db_password,
-        host=f"/cloudsql/{cloud_sql_connection_name}",
+        # host=f"/cloudsql/{cloud_sql_connection_name}",
+        host=db_host,
         port="5432",
     )
     return conn
@@ -168,6 +170,7 @@ with col1:
         unsafe_allow_html=True,
     )
 with col2:
+    print(match_info['home_score'])
     st.markdown(
         f"<h2 style='text-align: center; margin: 0; font-size: 4rem;'>{int(match_info['home_score'])} : {int(match_info['away_score'])}</h2>",
         unsafe_allow_html=True,

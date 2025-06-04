@@ -14,6 +14,11 @@ from utils import *
 from constants import colors
 
 
+# Stałe kolory dla drużyn
+HOME_COLOR = "#1a75ff"  # niebieski dla home team
+AWAY_COLOR = "#ff3333"  # czerwony dla away team
+
+
 def passing_sonars(main_df, team, inverse=False):
     startingXI = getStartingXI(main_df, team)
     df = main_df[
@@ -55,6 +60,8 @@ def passing_sonars(main_df, team, inverse=False):
     pitch = Pitch(pitch_type="opta", pitch_color="#0e1117", line_color="#c7d5cc")
     pitch.draw(ax=ax)
 
+    team_color = HOME_COLOR if not inverse else AWAY_COLOR
+
     for player in startingXI:
         for _, row in pass_sonar[pass_sonar.player == player].iterrows():
             theta_left_start = 198
@@ -69,7 +76,7 @@ def passing_sonars(main_df, team, inverse=False):
                 r=row.length * 0.2,
                 theta1=theta_right,
                 theta2=theta_left,
-                facecolor=colors[team],
+                facecolor=team_color,
                 edgecolor="black",
                 alpha=opacity,
             )
@@ -114,6 +121,8 @@ def pass_heatmap(main_df, team, inverse=False):
         passes["x"] = 100 - passes["x"]
         passes["y"] = 100 - passes["y"]
 
+    team_color = HOME_COLOR if not inverse else AWAY_COLOR
+
     sns.kdeplot(
         x=passes["x"],
         y=passes["y"],
@@ -123,7 +132,7 @@ def pass_heatmap(main_df, team, inverse=False):
         n_levels=10,
         cmap=LinearSegmentedColormap.from_list(
             "",
-            [lighten_hex_color(colors[team], 0.45), colors[team]],
+            [lighten_hex_color(team_color, 0.45), team_color],
             N=100,
         ),
         ax=ax,
@@ -137,7 +146,6 @@ def pass_heatmap(main_df, team, inverse=False):
 
 
 def voronoi(main_df, home_team, away_team):
-
     subs = main_df[main_df["type"] == "SubstitutionOn"]
     min_threshold = min(subs["minute"])
     sec_threshold = min(subs["second"])
@@ -169,12 +177,13 @@ def voronoi(main_df, home_team, away_team):
     pitch.voronoi(df.x, df.y, df.team)
     team1, team2 = pitch.voronoi(df.x, df.y, df.team_id)
 
-    pitch.polygon(team1, ax=ax, fc=colors[home_team], ec="white", lw=3, alpha=0.5)
-    pitch.polygon(team2, ax=ax, fc=colors[away_team], ec="white", lw=3, alpha=0.5)
+    pitch.polygon(team1, ax=ax, fc=HOME_COLOR, ec="white", lw=3, alpha=0.5)
+    pitch.polygon(team2, ax=ax, fc=AWAY_COLOR, ec="white", lw=3, alpha=0.5)
 
     # Plot players
     for i in range(len(df["x"])):
-        pitch.scatter(df["x"][i], df["y"][i], ax=ax, color=colors[df["team"][i]])
+        team_color = HOME_COLOR if df["team_id"][i] else AWAY_COLOR
+        pitch.scatter(df["x"][i], df["y"][i], ax=ax, color=team_color)
 
         annotation_text = df["player"][i].split(" ")[-1]
 
@@ -201,7 +210,6 @@ def voronoi(main_df, home_team, away_team):
 
 
 def progressive_passes(main_df, team, inverse=False):
-
     df = main_df[(main_df["team"] == team) & (main_df["type"] == "Pass")].copy()
 
     if not inverse:
@@ -226,6 +234,8 @@ def progressive_passes(main_df, team, inverse=False):
 
     df = df[df["progressive"] == True]
     df.index = range(len(df))
+    
+    team_color = HOME_COLOR if not inverse else AWAY_COLOR
     pitch.lines(
         xstart=df["x"],
         ystart=df["y"],
@@ -233,7 +243,7 @@ def progressive_passes(main_df, team, inverse=False):
         yend=df["end_y"],
         ax=ax,
         comet=True,
-        color=colors[team],
+        color=team_color,
     )
 
     ax.set_title(
@@ -249,7 +259,6 @@ def progressive_passes(main_df, team, inverse=False):
 
 
 def final_3rd_passes(main_df, team, inverse=False):
-
     df = main_df[(main_df["team"] == team) & (main_df["type"] == "Pass")].copy()
 
     if inverse:
@@ -272,6 +281,8 @@ def final_3rd_passes(main_df, team, inverse=False):
 
     df = df[df["to_final_3rd"] == True]
     df.index = range(len(df))
+    
+    team_color = HOME_COLOR if not inverse else AWAY_COLOR
     pitch.lines(
         xstart=df["x"],
         ystart=df["y"],
@@ -279,7 +290,7 @@ def final_3rd_passes(main_df, team, inverse=False):
         yend=df["end_y"],
         ax=ax,
         comet=True,
-        color=colors[team],
+        color=team_color,
     )
 
     ax.set_title(
@@ -295,7 +306,6 @@ def final_3rd_passes(main_df, team, inverse=False):
 
 
 def penalty_area_passes(main_df, team, inverse=False):
-
     df = main_df[(main_df["team"] == team) & (main_df["type"] == "Pass")].copy()
 
     if inverse:
@@ -318,6 +328,8 @@ def penalty_area_passes(main_df, team, inverse=False):
 
     df = df[df["to_penalty"] == True]
     df.index = range(len(df))
+    
+    team_color = HOME_COLOR if not inverse else AWAY_COLOR
     pitch.lines(
         xstart=df["x"],
         ystart=df["y"],
@@ -325,7 +337,7 @@ def penalty_area_passes(main_df, team, inverse=False):
         yend=df["end_y"],
         ax=ax,
         comet=True,
-        color=colors[team],
+        color=team_color,
     )
 
     ax.set_title(
@@ -341,7 +353,6 @@ def penalty_area_passes(main_df, team, inverse=False):
 
 
 def shot_types(main_df, home_team, away_team):
-
     outcome_dict = {
         "SavedShot": "s",
         "Goal": "*",
@@ -366,7 +377,7 @@ def shot_types(main_df, home_team, away_team):
             ax.scatter(
                 shots["y"][i],
                 shots["x"][i],
-                color=colors[home_team],
+                color=HOME_COLOR,
                 edgecolors="white",
                 marker=outcome_dict[shots["type"][i]],
                 s=120,
@@ -376,7 +387,7 @@ def shot_types(main_df, home_team, away_team):
             ax.scatter(
                 100 - shots["y"][i],
                 100 - shots["x"][i],
-                color=colors[away_team],
+                color=AWAY_COLOR,
                 edgecolors="white",
                 marker=outcome_dict[shots["type"][i]],
                 s=120,
@@ -450,7 +461,7 @@ def shot_types(main_df, home_team, away_team):
     )
     home_team_text.set_bbox(
         dict(
-            facecolor=colors[home_team], alpha=0.5, edgecolor="white", boxstyle="round"
+            facecolor=HOME_COLOR, alpha=0.5, edgecolor="white", boxstyle="round"
         )
     )
     away_team_text = ax.text(
@@ -465,7 +476,7 @@ def shot_types(main_df, home_team, away_team):
     )
     away_team_text.set_bbox(
         dict(
-            facecolor=colors[away_team], alpha=0.5, edgecolor="white", boxstyle="round"
+            facecolor=AWAY_COLOR, alpha=0.5, edgecolor="white", boxstyle="round"
         )
     )
 
@@ -635,7 +646,7 @@ def pass_xT_momentum(
         momentum_df["minute"],
         momentum_df["smoothed_momentum"],
         where=(momentum_df["smoothed_momentum"] > 0),
-        color=colors[home_team],
+        color=HOME_COLOR,
         alpha=0.5,
         interpolate=True,
     )
@@ -643,7 +654,7 @@ def pass_xT_momentum(
         momentum_df["minute"],
         momentum_df["smoothed_momentum"],
         where=(momentum_df["smoothed_momentum"] < 0),
-        color=colors[away_team],
+        color=AWAY_COLOR,
         alpha=0.5,
         interpolate=True,
     )
@@ -671,7 +682,7 @@ def pass_xT_momentum(
     )
     home_team_text.set_bbox(
         dict(
-            facecolor=colors[home_team], alpha=0.5, edgecolor="white", boxstyle="round"
+            facecolor=HOME_COLOR, alpha=0.5, edgecolor="white", boxstyle="round"
         )
     )
     away_team_text = ax.text(
@@ -686,7 +697,7 @@ def pass_xT_momentum(
     )
     away_team_text.set_bbox(
         dict(
-            facecolor=colors[away_team], alpha=0.5, edgecolor="white", boxstyle="round"
+            facecolor=AWAY_COLOR, alpha=0.5, edgecolor="white", boxstyle="round"
         )
     )
 
@@ -733,9 +744,6 @@ def pass_xT_momentum(
     return fig, ax
 
 
-# TODO check if the function works correctly
-
-
 def pitch_event_scatter(
     main_df, team, event_type, players=None, heatmap=False, inverse=False
 ):
@@ -749,12 +757,14 @@ def pitch_event_scatter(
     pitch = Pitch(pitch_type="opta", pitch_color="#0e1117", line_color="#c7d5cc")
     pitch.draw(ax=ax)
 
+    team_color = HOME_COLOR if not inverse else AWAY_COLOR
+
     if not heatmap:
         for idx, row in df.iterrows():
             ax.scatter(
                 row["x"],
                 row["y"],
-                color=colors[team],
+                color=team_color,
                 s=100,
                 edgecolor="black",
                 zorder=3,
@@ -769,7 +779,7 @@ def pitch_event_scatter(
             ax=ax,
             alpha=0.55,
             cmap=LinearSegmentedColormap.from_list(
-                "custom_cmap", ["#f3f9ff", colors[team]], N=100
+                "custom_cmap", ["#f3f9ff", team_color], N=100
             ),
         )
         pitch.label_heatmap(
