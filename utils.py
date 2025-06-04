@@ -24,6 +24,7 @@ def getStartingXI(df, team, deal_with_first_half_subs=True):
     startingXI = list(
         set(player for player in df[df["team"] == team]["player"] if player is not None)
         - set(df[(df["type"] == "SubstitutionOn") & (df["team"] == team)]["player"])
+        - set('0')
     )
     assert len(startingXI) == 11
 

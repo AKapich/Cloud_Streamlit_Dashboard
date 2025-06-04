@@ -71,7 +71,7 @@ with st.sidebar:
         for g in schedule[
             (schedule["game_id"].isin(featured_matches))
             & (schedule["league"] == selected_league_value)
-        ]["game"].values
+        ].drop_duplicates()["game"].values
         if pd.Timestamp(date_range[0])
         <= pd.Timestamp(g[:10])
         <= pd.Timestamp(date_range[1])
@@ -107,6 +107,7 @@ with st.sidebar:
             (schedule["game_id"].isin(featured_matches))
             & (schedule["league"] == selected_league_value)
         ]
+        .drop_duplicates()
         .sort_values("date", ascending=False)
         .head(3)
         .iterrows()
@@ -142,7 +143,7 @@ if away_team in team_name_temporary_fix.keys():
 #
 original_game = matches_dict[selected_match]
 
-match_info = schedule[schedule["game"] == original_game].squeeze()
+match_info = schedule[schedule["game"] == original_game].iloc[0]
 
 home_logo_url = f"./logos/{selected_league}/{home_team}.png"
 away_logo_url = f"./logos/{selected_league}/{away_team}.png"
@@ -170,7 +171,6 @@ with col1:
         unsafe_allow_html=True,
     )
 with col2:
-    print(match_info['home_score'])
     st.markdown(
         f"<h2 style='text-align: center; margin: 0; font-size: 4rem;'>{int(match_info['home_score'])} : {int(match_info['away_score'])}</h2>",
         unsafe_allow_html=True,
@@ -204,7 +204,7 @@ with col6:
 st.divider()
 
 st.subheader("Match Analysis")
-main_df = events[events["game_id"] == match_info["game_id"]].copy()
+main_df = events[events["game_id"] == match_info["game_id"]].drop_duplicates().copy()
 
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs(
