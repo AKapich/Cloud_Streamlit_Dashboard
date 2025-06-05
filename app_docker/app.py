@@ -86,7 +86,7 @@ with st.sidebar:
     st.divider()
 
     st.title("⚽ Match Selection")
-    selected_league = st.selectbox("Select League", list(leagues.keys()), index=0)
+    selected_league = st.selectbox("Select League", list(leagues.keys()), index=1)
     selected_league_value = leagues[selected_league]
 
     query = """
@@ -331,7 +331,7 @@ with tab2:
     players = [
         p
         for p in list(main_df[main_df["team"] == analysed_team_tab2]["player"].unique())
-        if p is not None
+        if p is not None and p != '0'
     ]
     with st.expander("Player Selection", expanded=False):
         grid = st.multiselect(

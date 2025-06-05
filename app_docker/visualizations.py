@@ -895,7 +895,7 @@ def overview(main_df, home_team, away_team):
                 1,
             ),
             "Shots": str(
-                len(main_df[(main_df["team"] == team) & (main_df["is_shot"].notna())])
+                len(main_df[(main_df["team"] == team) & (main_df["is_shot"] == 1)])
             ),
             "Corners": str(
                 len(

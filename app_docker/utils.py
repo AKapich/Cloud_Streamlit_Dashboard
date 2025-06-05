@@ -22,27 +22,31 @@ def lighten_hex_color(hex_color, percentage):
 
 def getStartingXI(df, team, deal_with_first_half_subs=True):
     startingXI = list(
-        set(player for player in df[df["team"] == team]["player"] if player is not None)
+        set(
+            player for player in df[df["team"] == team]["player"]
+            if player is not None and player != '0'
+        )
         - set(df[(df["type"] == "SubstitutionOn") & (df["team"] == team)]["player"])
-        - set('0')
     )
     assert len(startingXI) == 11
 
     if deal_with_first_half_subs:
-        sub_on = list(
-            df[
-                (df["type"] == "SubstitutionOn")
-                & (df["team"] == team)
-                & (df["minute"] < 45)
+        sub_on = [
+            player for player in df[
+                (df["type"] == "SubstitutionOn") &
+                (df["team"] == team) &
+                (df["minute"] < 45)
             ]["player"]
-        )
-        sub_off = list(
-            df[
-                (df["type"] == "SubstitutionOff")
-                & (df["team"] == team)
-                & (df["minute"] < 45)
+            if player != '0' and player is not None
+        ]
+        sub_off = [
+            player for player in df[
+                (df["type"] == "SubstitutionOff") &
+                (df["team"] == team) &
+                (df["minute"] < 45)
             ]["player"]
-        )
+            if player != '0' and player is not None
+        ]
         startingXI += sub_on
         startingXI = [player for player in startingXI if player not in sub_off]
 
