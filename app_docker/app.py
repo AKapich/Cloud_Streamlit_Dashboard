@@ -25,8 +25,8 @@ def create_connection():
         dbname="postgres",
         user="postgres",
         password=db_password,
-        host=db_host,
-        # host=f"/cloudsql/{cloud_sql_connection_name}",
+        # host=db_host,
+        host=f"/cloudsql/{cloud_sql_connection_name}",
         port="5432",
     )
     return conn
